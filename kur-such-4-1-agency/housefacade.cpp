@@ -25,6 +25,16 @@ QVector<QVector<QString>> housefacade::getAllHouses()
     return data.getAllHouses();
 }
 
+housedata* housefacade::getRawHouses()
+{
+    return &data;
+}
+
+void housefacade::setRowHouses(housedata *data)
+{
+    this->data.setData(data);
+}
+
 QVector<QVector<QString>> housefacade::getHousesByDistrict(QString dist)
 {
     return data.getHousesByDistrict(dist);
@@ -58,4 +68,27 @@ QVector<QVector<QString>> housefacade::getHousesByDistrict(QString dist)
  void housefacade::clearHouses()
  {
      data.clearHouseList();
+ }
+
+ bool housefacade::deleteAdress(QString adr)
+ {
+     return data.deleteAdress(adr);
+ }
+
+ bool housefacade::editAdress(QString oldAdr, QString newAdr)
+ {
+     return data.editAdress(oldAdr, newAdr);
+ }
+
+ bool housefacade::editHouse(int id, QString adress, int cost, int type, QString district, int state, QString clientName, QString phone)
+ {
+     client* cl = new client(clientName, phone);
+     house* house;
+     house = HouseFactory->createHouse(adress, cost, type, district, state, cl);
+     return data.editHouse(id, house);
+ }
+
+ bool housefacade::deleteHouse(int id)
+ {
+     return data.deleteHouse(id);
  }

@@ -21,6 +21,7 @@ SOURCES += \
     housedata.cpp \
     housefacade.cpp \
     housefactory.cpp \
+    housewindow.cpp \
     main.cpp \
     mainwindow.cpp \
     manyrooms.cpp \
@@ -35,6 +36,7 @@ HEADERS += \
     housedata.h \
     housefacade.h \
     housefactory.h \
+    housewindow.h \
     mainwindow.h \
     manyrooms.h \
     oneroom.h \
@@ -43,6 +45,7 @@ HEADERS += \
     tworooms.h
 
 FORMS += \
+    housewindow.ui \
     mainwindow.ui
 
 # Default rules for deployment.

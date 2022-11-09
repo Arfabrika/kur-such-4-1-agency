@@ -6,17 +6,17 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    houseFacade.loadDataFromFile();
-    updateAdresses();
-    ui->cost->setText("3000000");
-    ui->district->setText("Калининский район");
-    ui->district_find->setText("Калининский район");
-    ui->yes_bought->setChecked(true);
-    ui->client_name->setText("Иванов Виталий Олегович");
-    ui->client_phone->setText("+79219876543");
+    houseFacade = new housefacade();
+    houseFacade->loadDataFromFile();
+    housedata* data = houseFacade->getRawHouses();
+    hw = new housewindow(data, this);
+    //connect(ui->deleteHouse, SIGNAL(clicked()), hw, SLOT(show()));
     for (int i = 0; i < COLUMN_CNT; i++)
         ui->tableOut->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
     ui->out_adress->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->label_14->hide();
+    ui->new_adress_2->hide();
+    ui->save_edited_adress->hide();
 }
 
 MainWindow::~MainWindow()
@@ -24,50 +24,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::updateAdresses()
-{
-    QVector<QString> res = houseFacade.getAdresses();
-    if (!res.size())
-        ui->adressList->setEnabled(false);
-   else
-    {
-        ui->adressList->clear();
-        for (int i = 0; i < res.size(); i++)
-           ui->adressList->addItem(res[i], i);
-    }
-}
-
-void MainWindow::on_add_clicked()
-{
-    QString adress = ui->adressList->currentText(),
-            district = ui->district->text(),
-            fio = ui->client_name->text(),
-            phone = ui->client_phone->text();
-    int cost = ui->cost->text().toInt(),
-        type = ui->type->currentIndex(),
-        state;
-    if (ui->yes_bought->isChecked())
-        state = 1;
-    else
-    {
-        state = 0;
-        fio = "-";
-        phone = "-";
-    }
-    client* cl = new client(fio, phone);
-    //house* h = new house(adress, cost, type, district, state, cl);
-    houseFacade.addHouse(adress, cost, type, district, state, cl);
-    ui->cost->clear();
-    ui->district->clear();
-    ui->client_name->clear();
-    ui->client_phone->clear();
-}
-
-
 void MainWindow::on_find_clicked()
 {
     int type = ui->type_find->currentIndex();
-    QVector<QVector<QString>> res = houseFacade.findHouses(type);
+    QVector<QVector<QString>> res = houseFacade->findHouses(type);
     if (!res.size())
     {
         ui->tableOut->setRowCount(1);
@@ -84,7 +44,7 @@ void MainWindow::on_find_clicked()
 
 void MainWindow::on_getAllHouses_clicked()
 {
-    QVector<QVector<QString>> res = houseFacade.getAllHouses();
+    QVector<QVector<QString>> res = houseFacade->getAllHouses();
     if (!res.size())
     {
         ui->tableOut->clearContents();
@@ -103,20 +63,20 @@ void MainWindow::on_getAllHouses_clicked()
 
 void MainWindow::on_saveFile_clicked()
 {
-    houseFacade.saveDataInFile();
+    houseFacade->saveDataInFile();
 }
 
 
 void MainWindow::on_loadFile_clicked()
 {
-    houseFacade.loadDataFromFile();
+    houseFacade->loadDataFromFile();
 }
 
 
 void MainWindow::on_find_dist_clicked()
 {
     QString district = ui->district_find->text();
-    QVector<QVector<QString>> res = houseFacade.getHousesByDistrict(district);
+    QVector<QVector<QString>> res = houseFacade->getHousesByDistrict(district);
     if (!res.size())
     {
         ui->tableOut->clearContents();
@@ -136,15 +96,15 @@ void MainWindow::on_find_dist_clicked()
 void MainWindow::on_add_adress_clicked()
 {
     QString adr = ui->new_adress->text();
-    houseFacade.addAdress(adr);
+    houseFacade->addAdress(adr);
     ui->new_adress->clear();
-    updateAdresses();
+    ui->result_label->setText("Адрес добавлен");
 }
 
 
 void MainWindow::on_show_adress_clicked()
 {
-    QVector<QString> res = houseFacade.getAdresses();
+    QVector<QString> res = houseFacade->getAdresses();
     if (!res.size())
     {
         ui->out_adress->clearContents();
@@ -162,24 +122,73 @@ void MainWindow::on_show_adress_clicked()
 
 void MainWindow::on_loadFile_2_clicked()
 {
-    houseFacade.loadDataFromFile();
+    houseFacade->loadDataFromFile();
 }
 
 
 void MainWindow::on_saveFile_2_clicked()
 {
-    houseFacade.saveDataInFile();
+    houseFacade->saveDataInFile();
 }
 
 
 void MainWindow::on_clearHouses_clicked()
 {
-    houseFacade.clearHouses();
+    houseFacade->clearHouses();
 }
 
 
 void MainWindow::on_clearAdresses_clicked()
 {
-    houseFacade.clearAdresses();
+    houseFacade->clearAdresses();
 }
 
+
+void MainWindow::on_edit_adress_clicked()
+{
+    ui->result_label->hide();
+    ui->label_14->show();
+    ui->new_adress_2->show();
+    ui->save_edited_adress->show();
+}
+
+void MainWindow::on_add_adress_2_clicked()
+{
+    QString adr = ui->new_adress->text();
+    if (houseFacade->deleteAdress(adr))
+    {
+        ui->result_label->setText("Адрес " + adr + " удален");
+        on_show_adress_clicked();
+    }
+    else
+        ui->result_label->setText("Ошибка при удалении адреса " + adr);
+}
+
+void MainWindow::on_save_edited_adress_clicked()
+{
+    QString adr = ui->new_adress->text();
+    QString adrNew = ui->new_adress_2->text();
+    ui->label_14->hide();
+    ui->new_adress_2->hide();
+    ui->save_edited_adress->hide();
+    ui->result_label->show();
+    if (houseFacade->editAdress(adr, adrNew))
+    {
+        ui->result_label->setText("Адрес " + adr + " изменен на " + adrNew);
+        on_show_adress_clicked();
+    }
+    else
+        ui->result_label->setText("Ошибка при изменении адреса " + adr);
+}
+
+void MainWindow::recieveData(housedata* data)
+{
+    houseFacade->setRowHouses(data);
+}
+
+void MainWindow::on_deleteHouse_clicked()
+{
+    housedata* data = houseFacade->getRawHouses();
+    hw = new housewindow(data, this);
+    hw->show();
+}

@@ -11,6 +11,22 @@ void housedata::addHouse(house* stud)
     houseList.push_back(stud);
 }
 
+QString housedata::getTypeByNumber(int num)
+{
+    switch (num) {
+    case 0:
+       return "Студия";
+    case 1:
+       return "Одна комната";
+    case 2:
+        return "Две комнаты";
+    case 3:
+        return "Три комнаты";
+    default:
+        return "Более трех комнат";
+    }
+}
+
 QVector<QVector<QString>> housedata::getAllHouses()
 {
     QVector<QVector<QString>> res;
@@ -19,24 +35,7 @@ QVector<QVector<QString>> housedata::getAllHouses()
     {
         QVector<QString> houseinfo;
         houseinfo.push_back(houseList[i]->getAdress());
-        switch (houseList[i]->getType())
-        {
-        case 0:
-            houseinfo.push_back("Студия");
-            break;
-        case 1:
-            houseinfo.push_back("Одна комната");
-            break;
-        case 2:
-            houseinfo.push_back("Две комнаты");
-            break;
-        case 3:
-            houseinfo.push_back("Три комнаты");
-            break;
-        case 4:
-            houseinfo.push_back("Более трех комнат");
-            break;
-        }
+        houseinfo.push_back(getTypeByNumber(houseList[i]->getType()));
         houseinfo.push_back(houseList[i]->getDistrict());
         houseinfo.push_back(tmp.setNum(houseList[i]->getCost()));
         houseList[i]->getState() ? houseinfo.push_back("Да") : houseinfo.push_back("Нет");
@@ -58,24 +57,7 @@ QVector<QVector<QString>> housedata::getHousesByType(int type)
         {
             QVector<QString> houseinfo;
             houseinfo.push_back(houseList[i]->getAdress());
-            switch (houseList[i]->getType())
-            {
-            case 0:
-                houseinfo.push_back("Студия");
-                break;
-            case 1:
-                houseinfo.push_back("Одна комната");
-                break;
-            case 2:
-                houseinfo.push_back("Две комнаты");
-                break;
-            case 3:
-                houseinfo.push_back("Три комнаты");
-                break;
-            case 4:
-                houseinfo.push_back("Более трех комнат");
-                break;
-            }
+            houseinfo.push_back(getTypeByNumber(houseList[i]->getType()));
             houseinfo.push_back(houseList[i]->getDistrict());
             houseinfo.push_back(tmp.setNum(houseList[i]->getCost()));
             houseList[i]->getState() ? houseinfo.push_back("Да") : houseinfo.push_back("Нет");
@@ -99,24 +81,7 @@ QVector<QVector<QString>> housedata::getHousesByDistrict(QString dist)
         {
             QVector<QString> houseinfo;
             houseinfo.push_back(houseList[i]->getAdress());
-            switch (houseList[i]->getType())
-            {
-            case 0:
-                houseinfo.push_back("Студия");
-                break;
-            case 1:
-                houseinfo.push_back("Одна комната");
-                break;
-            case 2:
-                houseinfo.push_back("Две комнаты");
-                break;
-            case 3:
-                houseinfo.push_back("Три комнаты");
-                break;
-            case 4:
-                houseinfo.push_back("Более трех комнат");
-                break;
-            }
+             houseinfo.push_back(getTypeByNumber(houseList[i]->getType()));
             houseinfo.push_back(houseList[i]->getDistrict());
             houseinfo.push_back(tmp.setNum(houseList[i]->getCost()));
             houseList[i]->getState() ? houseinfo.push_back("Да") : houseinfo.push_back("Нет");
@@ -135,6 +100,7 @@ void housedata::saveInFile(QString flats, QString adresses)
     if (file_flats.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream writeStream(&file_flats);
+        writeStream.setCodec("UTF-8");
         for (int i = 0; i < houseList.size(); i++)
         {
             writeStream << houseList[i]->getAdress() + "\n" <<
@@ -152,6 +118,7 @@ void housedata::saveInFile(QString flats, QString adresses)
     if (file_adrs.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream writeStream(&file_adrs);
+        writeStream.setCodec("UTF-8");
         for (int i = 0; i < adressList.size(); i++)
             writeStream << adressList[i] << "\n";
         file_adrs.close();
@@ -181,7 +148,7 @@ void housedata::loadFromFile(QString flats, QString adresses)
             state = tmp.toInt();
             name = file_flats.readLine().trimmed();
             phone = file_flats.readLine().trimmed();
-            house* h;// = new house(adress, cost, type, district, state, new client(name, phone));
+            house* h;
             housefactory* hf;
             h = hf->createHouse(adress, cost, type, district, state, new client(name, phone));
             addHouse(h);
@@ -230,4 +197,44 @@ void housedata::clearAdressList()
 {
     if (adressList.size())
         adressList.clear();
+}
+
+bool housedata::deleteAdress(QString adress)
+{
+    int ind = adressList.indexOf(adress);
+    if (ind == -1)
+        return false;
+    adressList.removeAt(ind);
+    return true;
+}
+
+bool housedata::editAdress(QString oldAdr, QString newAdr)
+{
+    int ind = adressList.indexOf(oldAdr);
+    if (ind == -1)
+        return false;
+    adressList.replace(ind, newAdr);
+    return true;
+}
+
+void housedata::setData(housedata *data)
+{
+    adressList = data->adressList;
+    houseList = data->houseList;
+}
+
+bool housedata::editHouse(int id, house *h)
+{
+    if (id < 0 || id > houseList.length())
+        return false;
+    houseList.replace(id, h);
+    return true;
+}
+
+bool housedata::deleteHouse(int id)
+{
+    if (id < 0 || id > houseList.length())
+        return false;
+    houseList.removeAt(id);
+    return true;
 }

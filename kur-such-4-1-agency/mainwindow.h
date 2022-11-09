@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <housefacade.h>
+#include <houseFacade.h>
+#include <housewindow.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,11 +18,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void updateAdresses();
 
 private slots:
-    void on_add_clicked();
-
     void on_find_clicked();
 
     void on_getAllHouses_clicked();
@@ -44,8 +42,20 @@ private slots:
 
     void on_clearAdresses_clicked();
 
+    void on_edit_adress_clicked();
+
+    void on_add_adress_2_clicked();
+
+    void on_save_edited_adress_clicked();
+
+    void recieveData(housedata* data);
+
+    void on_deleteHouse_clicked();
+
 private:
     Ui::MainWindow *ui;
-    housefacade houseFacade;
+    housefacade* houseFacade;
+    housewindow *hw;
+
 };
 #endif // MAINWINDOW_H

@@ -11,19 +11,28 @@ class housedata : public QObject
     Q_OBJECT
     QList<house *> houseList;
     QList<QString> adressList;
+
+    QString getTypeByNumber(int num);
 public:
     housedata();
-    void addHouse(house* stud);
-    void addAdress(QString adress);
+    void addHouse(house* stud);   
     QVector<QVector<QString>> getAllHouses();
     QVector<QVector<QString>> getHousesByType(int type);
-    QVector<QVector<QString>> getHousesByDistrict(QString dist);
-    QVector<QString> getAdresses();
+    QVector<QVector<QString>> getHousesByDistrict(QString dist);   
     void clearHouseList();
+    bool editHouse(int id, house* h);
+    bool deleteHouse(int id);
+
+    void addAdress(QString adress);
+    QVector<QString> getAdresses();
+    bool deleteAdress(QString adress);
+    bool editAdress(QString oldAdr, QString newAdr);
     void clearAdressList();
 
     void saveInFile(QString flats, QString adresses);
     void loadFromFile(QString flats, QString adresses);
+
+    void setData(housedata* data);
 };
 
 #endif // HOUSEDATA_H
